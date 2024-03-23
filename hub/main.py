@@ -41,14 +41,14 @@ async def save_processed_agent_data(processed_agent_data: ProcessedAgentData):
     redis_client.lpush("processed_agent_data", json.dumps(processed_agent_data.dict()))
     if redis_client.llen("processed_agent_data") >= BATCH_SIZE:
         processed_agent_data_batch: List[ProcessedAgentData] = []
-        while redis_client.llen("processed_agent_data") >= BATCH_SIZE:
-            for _ in range(BATCH_SIZE):
-                processed_agent_data_json = redis_client.lpop("processed_agent_data")
-                processed_agent_data_dict = json.loads(processed_agent_data_json)
-                processed_agent_data = ProcessedAgentData(**processed_agent_data_dict)
-                processed_agent_data_batch.append(processed_agent_data)
-            print(processed_agent_data_batch)
-            store_adapter.save_data(processed_agent_data_batch=processed_agent_data_batch)
+
+        for _ in range(BATCH_SIZE):
+            processed_agent_data_json = redis_client.lpop("processed_agent_data")
+            processed_agent_data_dict = json.loads(processed_agent_data_json)
+            processed_agent_data = ProcessedAgentData(**processed_agent_data_dict)
+            processed_agent_data_batch.append(processed_agent_data)
+
+        store_adapter.save_data(processed_agent_data_batch=processed_agent_data_batch)
     return {"status": "ok"}
 
 # MQTT
